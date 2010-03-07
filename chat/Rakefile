@@ -1,0 +1,5 @@
+task :failsafe do
+  cp ".app.rb", "app.rb"
+  cp ".poll.rb", "poll.rb"
+  cp "public/.chat.js", "public/chat.js"
+end
