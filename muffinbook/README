@@ -1,0 +1,4 @@
+script/server -e production
+thin start -R api.ru
+
+nice -n20 ab -c200 -n1000 http://0.0.0.0:3000/recipes/random.json

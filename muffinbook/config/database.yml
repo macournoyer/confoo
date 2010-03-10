@@ -1,0 +1,15 @@
+development:
+  adapter: mysql
+  database: muffins_development
+  pool: 5
+  username: root
+  password:
+  socket: /tmp/mysql.sock
+  
+production:
+  adapter: mysql
+  database: muffins_development
+  pool: 5
+  username: root
+  password:
+  socket: /tmp/mysql.sock
