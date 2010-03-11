@@ -1,4 +1,40 @@
-script/server -e production
-thin start -R api.ru
+$ script/generate metal random_recipe
+...
+$ script/server thin -e production
+$ nice -n20 ab -c200 -n1000 http://0.0.0.0:3000/recipes/random.json
 
-nice -n20 ab -c200 -n1000 http://0.0.0.0:3000/recipes/random.json
+
+require "#{RAILS_ROOT}/vendor/em-mysql/lib/em/mysql"
+require "thin"
+require "thin/async"
+require "yajl"
+
+EventedMysql.settings.update :database => "muffins_development",
+                             :user => "root",
+                             :encoding => "utf8",
+                             :connections => 4
+
+class RandomRecipe
+  SQL = "SELECT title, description FROM recipes ORDER BY RAND()"
+  ENCODER = Yajl::Encoder.new(:terminator => nil)
+
+  def self.call(env)
+    if env["PATH_INFO"] =~ /^\/recipes2\/random\.json/
+      response = Thin::AsyncResponse.new(env)
+
+      EventedMysql.select(SQL) do |results|
+        ENCODER.encode(results.first) do |chunk|
+          if chunk
+            response << chunk
+          else
+            response.done
+          end
+        end
+      end
+
+      response.finish
+    else
+      [404, {"Content-Type" => "text/html"}, ["Not Found"]]
+    end
+  end
+end
